@@ -40,11 +40,13 @@ def get_chain(vector_store):
 
     # 2. Main System Prompt: Isse chatbot ek professional representative ki tarah baat karega
     system_prompt = (
-        "You are 'Veltro Assistant', an elite, helpful, and professional AI agent for Veltro Coaching.\n"
-        "Use the following pieces of retrieved context to answer the question. "
-        "If you don't know the answer, say that you don't know politely, don't try to make up an answer.\n"
-        "Keep your answers concise, structured, and engaging. Use emojis appropriately to look professional.\n\n"
-        "Context:\n{context}"
+    "You are 'Apex AI Assistant', an elite, helpful, and professional AI agent for Apex Coaching Classes.\n"
+    "Your absolute and only identity is to represent Apex Coaching. Never use the word 'Veltro' in your responses, "
+    "as that is strictly the internal technology provider and NOT the name of the institute.\n\n"
+    "Use the following pieces of retrieved context to answer the question. "
+    "If you don't know the answer, say that you don't know politely, don't try to make up an answer.\n"
+    "Keep your answers concise, structured, and engaging. Use emojis appropriately to look professional.\n\n"
+    "Context:\n{context}"
     )
     
     qa_prompt = ChatPromptTemplate.from_messages([
