@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 from dotenv import load_dotenv
 from src.embedder import get_or_create_vector_store
 from src.chain import get_chain
@@ -37,10 +37,52 @@ html, body, .stApp, .stAppViewContainer, .main, [data-testid="stAppViewWithSideb
 }
 
 .block-container {
+    max-width: 100% !important;
+    width: 100% !important;
+
     padding-top: 1.5rem !important;
     padding-bottom: 12rem !important;
-    max-width: 85% !important;
+
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+
     margin: 0 auto !important;
+}
+
+/* MAIN APP FULL WIDTH */
+[data-testid="stAppViewContainer"] {
+    width: 100% !important;
+}
+
+/* MAIN SECTION */
+[data-testid="stAppViewContainer"] > .main {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+/* REMOVE RESERVED SIDEBAR GAP */
+section[data-testid="stSidebar"][aria-expanded="false"] {
+    margin-left: -16.5rem !important;
+}
+
+/* EXPAND CONTENT WHEN SIDEBAR CLOSED */
+section[data-testid="stSidebar"][aria-expanded="false"] ~ div {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* TRUE CENTER CONTENT */
+section[data-testid="stSidebar"][aria-expanded="false"] ~ div .block-container {
+    margin: 0 auto !important;
+
+    padding-left: 4vw !important;
+    padding-right: 4vw !important;
+
+    max-width: 1400px !important;
 }
 
 /* HIDE STREAMLIT PLATFORM OVERLAYS */
@@ -56,6 +98,26 @@ html, body, .stApp, .stAppViewContainer, .main, [data-testid="stAppViewWithSideb
     min-width: 260px !important;
 }
 [data-testid="stSidebar"] * { color: #92400E !important; }
+            
+/* Sidebar reopen button fix */
+[data-testid="collapsedControl"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+
+    background: #D97706 !important;
+    color: white !important;
+
+    border-radius: 10px !important;
+    border: none !important;
+
+    z-index: 999999 !important;
+}
+
+/* Hover */
+[data-testid="collapsedControl"]:hover {
+    background: #B45309 !important;
+}
 
 [data-testid="stSidebar"] .stTextInput input {
     background: #FFF8E7 !important;
@@ -70,9 +132,21 @@ html, body, .stApp, .stAppViewContainer, .main, [data-testid="stAppViewWithSideb
     opacity: 0.5 !important;
 }
 [data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] {
-    background: #FFF8E7 !important;
+    background: #D97706 !important;
     border-radius: 10px !important;
-    border: 1px solid #FCD34D !important;
+    border: 1px solid #B45309 !important;
+    color: white !important;
+}
+
+/* Inner visible area */
+[data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] > div {
+    background: #D97706 !important;
+    color: white !important;
+}
+
+/* Dropdown arrow */
+[data-testid="stSidebar"] svg {
+    fill: white !important;
 }
 
 /* Sidebar Primary CTA Buttons */
@@ -252,6 +326,38 @@ div.stButton > button:first-child:hover { background: #B45309 !important; }
     text-align: center; font-size: 10px; color: #D1C4A0; font-family: monospace;
     padding: 14px; border-top: 1px solid #FDE68A; margin-top: 40px;
 }
+            
+/* =========================================================
+   MOBILE RESPONSIVE FIX
+========================================================= */
+
+@media (max-width: 768px) {
+
+    .block-container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    .welcome-title {
+        font-size: 20px !important;
+    }
+
+    .custom-msg-bubble {
+        max-width: 88% !important;
+    }
+
+    .topbar {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+
+    /* Buttons proper mobile layout */
+    .chip-btn button {
+        width: 100% !important;
+        margin-bottom: 10px !important;
+    }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -315,8 +421,9 @@ if "chain" not in st.session_state:
         try:
             vector_store = get_or_create_vector_store("data/coaching_faq.txt")
             st.session_state.chain = get_chain(vector_store)
-        except Exception as e:
-            st.error(f"Initialization Failed: {str(e)}")
+
+        except Exception:
+            st.session_state.chain = None
 
 # ─────────────────────────────────────────────────────
 # WELCOME BOARD ENGINE & ACTION CHIPS
@@ -330,8 +437,9 @@ if st.session_state.show_welcome and not st.session_state.messages:
     </div>
     """, unsafe_allow_html=True)
 
-    chips = ["📚 Courses offered?", "💰 Fee structure?", "⏰ Batch timings?", "🏆 Results 2024?"]
-    cols = st.columns(4)
+    chips = ["📚 Courses offered?", "💰 Fee structure?", "⏰ Batch timings?", "🏆 Results 2025?"]
+    # Responsive columns
+    cols = st.columns([1,1,1,1], gap="medium")
 
     for i, chip in enumerate(chips):
         with cols[i]:
@@ -353,7 +461,7 @@ if st.session_state.get("active_processing", False):
         st.session_state.messages.append({"role": "assistant", "content": answer, "time": current_ts})
         st.session_state.chat_history.extend([HumanMessage(content=target_query), AIMessage(content=answer)])
     except Exception as e:
-        st.error(f"Inference Failure: {str(e)}")
+        st.warning("Knowledge base temporarily unavailable.")
     st.session_state.active_processing = False
     st.rerun()
 
