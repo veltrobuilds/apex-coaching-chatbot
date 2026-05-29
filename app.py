@@ -1,4 +1,4 @@
-import streamlit as st 
+import streamlit as st
 from dotenv import load_dotenv
 from src.embedder import get_or_create_vector_store
 from src.chain import get_chain
@@ -18,106 +18,41 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────────────
-# FIXED PRODUCTION CSS — Chat Input Visibility Patched
+# CSS — Same on local + deployed
 # ─────────────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* ── BASE ── */
 html, body, [class*="css"], .stApp {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', sans-serif !important;
     background-color: #FFFBF5 !important;
 }
 
-/* ── CRITICAL SCROLL ENGINE FIX ── */
-html, body, .stApp, .stAppViewContainer, .main, [data-testid="stAppViewWithSidebar"], .st-emotion-cache-1jicfl2, .st-emotion-cache-z5fcl4 {
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    height: auto !important;
-}
-
-.block-container {
-    max-width: 100% !important;
-    width: 100% !important;
-
-    padding-top: 1.5rem !important;
-    padding-bottom: 12rem !important;
-
-    padding-left: 2rem !important;
-    padding-right: 2rem !important;
-
-    margin: 0 auto !important;
-}
-
-/* MAIN APP FULL WIDTH */
-[data-testid="stAppViewContainer"] {
-    width: 100% !important;
-}
-
-/* MAIN SECTION */
-[data-testid="stAppViewContainer"] > .main {
-    width: 100% !important;
-    max-width: 100% !important;
-
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-}
-
-/* REMOVE RESERVED SIDEBAR GAP */
-section[data-testid="stSidebar"][aria-expanded="false"] {
-    margin-left: -16.5rem !important;
-}
-
-/* EXPAND CONTENT WHEN SIDEBAR CLOSED */
-section[data-testid="stSidebar"][aria-expanded="false"] ~ div {
-    margin-left: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-}
-
-/* TRUE CENTER CONTENT */
-section[data-testid="stSidebar"][aria-expanded="false"] ~ div .block-container {
-    margin: 0 auto !important;
-
-    padding-left: 4vw !important;
-    padding-right: 4vw !important;
-
-    max-width: 1400px !important;
-}
-
-/* HIDE STREAMLIT PLATFORM OVERLAYS */
-#MainMenu, footer, header, .stDeployButton {
+/* ── HIDE STREAMLIT CHROME ── */
+#MainMenu, footer, header, .stDeployButton,
+[data-testid="stToolbar"], [data-testid="stDecoration"],
+[data-testid="stStatusWidget"] {
     visibility: hidden !important;
     display: none !important;
 }
 
-/* ── SIDEBAR INTERFACE NODES ── */
+/* ── BLOCK CONTAINER ── */
+.block-container {
+    max-width: 860px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 1.5rem 2rem 10rem 2rem !important;
+}
+
+/* ── SIDEBAR ── */
 [data-testid="stSidebar"] {
     background-color: #FEF3C7 !important;
     border-right: 1px solid #FDE68A !important;
     min-width: 260px !important;
 }
 [data-testid="stSidebar"] * { color: #92400E !important; }
-            
-/* Sidebar reopen button fix */
-[data-testid="collapsedControl"] {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-
-    background: #D97706 !important;
-    color: white !important;
-
-    border-radius: 10px !important;
-    border: none !important;
-
-    z-index: 999999 !important;
-}
-
-/* Hover */
-[data-testid="collapsedControl"]:hover {
-    background: #B45309 !important;
-}
 
 [data-testid="stSidebar"] .stTextInput input {
     background: #FFF8E7 !important;
@@ -131,26 +66,22 @@ section[data-testid="stSidebar"][aria-expanded="false"] ~ div .block-container {
     color: #D97706 !important;
     opacity: 0.5 !important;
 }
+
+/* Sidebar selectbox */
 [data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] {
     background: #D97706 !important;
     border-radius: 10px !important;
     border: 1px solid #B45309 !important;
     color: white !important;
 }
-
-/* Inner visible area */
 [data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] > div {
     background: #D97706 !important;
     color: white !important;
 }
+[data-testid="stSidebar"] svg { fill: white !important; }
 
-/* Dropdown arrow */
-[data-testid="stSidebar"] svg {
-    fill: white !important;
-}
-
-/* Sidebar Primary CTA Buttons */
-div.stButton > button:first-child {
+/* Sidebar buttons */
+[data-testid="stSidebar"] div.stButton > button {
     background: #D97706 !important;
     color: white !important;
     border-radius: 10px !important;
@@ -158,227 +89,231 @@ div.stButton > button:first-child {
     font-weight: 700 !important;
     width: 100% !important;
 }
-div.stButton > button:first-child:hover { background: #B45309 !important; }
-[data-testid="stSidebar"] .stButton > button {
-    background: transparent !important;
-    color: #D97706 !important;
-    border: 1px solid #FDE68A !important;
+[data-testid="stSidebar"] div.stButton > button:hover {
+    background: #B45309 !important;
 }
 
-/* ── BRANDING TOPBAR STRIP ── */
+/* Sidebar collapse button */
+[data-testid="collapsedControl"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: #D97706 !important;
+    color: white !important;
+    border-radius: 10px !important;
+    border: none !important;
+    z-index: 999999 !important;
+}
+[data-testid="collapsedControl"]:hover { background: #B45309 !important; }
+
+/* ── TOPBAR ── */
 .topbar {
     background: white;
-    border-bottom: 1px solid #FDE68A;
-    padding: 14px 22px;
+    border: 1px solid #FDE68A;
+    border-radius: 12px;
+    padding: 14px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: -20px;
     margin-bottom: 24px;
-    border-radius: 12px;
-    box-shadow: 0 1px 4px rgba(217,119,6,0.02);
+    box-shadow: 0 1px 4px rgba(217,119,6,0.06);
 }
-.topbar-title { font-size: 16px; font-weight: 700; color: #1C1917; }
+.topbar-title { font-size: 15px; font-weight: 700; color: #1C1917; }
 .topbar-sub { font-size: 11px; color: #A8A29E; margin-top: 2px; }
-
 .badge {
-    font-size: 10px; padding: 6px 12px; border-radius: 999px; font-family: monospace;
-    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; padding: 5px 12px; border-radius: 999px;
+    font-family: monospace; display: inline-flex; align-items: center; gap: 6px;
 }
 .badge-green { background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
 .badge-speed { background: #FEF3C7; color: #D97706; border: 1px solid #FDE68A; }
 
-/* WELCOME BOX CONFIG */
-.welcome-box { text-align: center; padding: 32px 20px; }
+/* ── WELCOME ── */
+.welcome-box { text-align: center; padding: 32px 20px 24px; }
 .welcome-icon-wrap {
     width: 54px; height: 54px; background: #D97706; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
 }
-.welcome-title { font-size: 24px; font-weight: 700; color: #1C1917; margin-bottom: 6px; }
-.welcome-sub { font-size: 13.5px; color: #A8A29E; }
+.welcome-title { font-size: 22px; font-weight: 700; color: #1C1917; margin-bottom: 6px; }
+.welcome-sub { font-size: 13px; color: #A8A29E; }
 
+/* ── CHIP BUTTONS ── */
 .chip-btn button {
-    background: #FEF3C7 !important; color: #92400E !important;
-    border: 1px solid #FDE68A !important; border-radius: 999px !important;
-    font-size: 13px !important; font-weight: 600 !important;
+    background: #FFF7ED !important;
+    color: #92400E !important;
+    border: 1px solid #FDE68A !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    width: 100% !important;
+    padding: 8px 12px !important;
+    transition: all 0.2s !important;
+}
+.chip-btn button:hover {
+    background: #FED7AA !important;
+    border-color: #F97316 !important;
 }
 
-/* ── PURE CUSTOM RAW HTML CHAT CONTAINER CELLS ── */
+/* ── CHAT BUBBLES ── */
 .custom-chat-row {
-    display: flex;
-    width: 100%;
-    margin-bottom: 16px;
-    gap: 12px;
+    display: flex; width: 100%;
+    margin-bottom: 16px; gap: 10px;
 }
 .row-user { flex-direction: row-reverse; }
 .row-bot { flex-direction: row; }
 
 .custom-avatar-circle {
-    width: 32px;
-    height: 32px;
+    width: 34px; height: 34px;
     background-color: #D97706 !important;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    flex-shrink: 0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
 }
 
 .custom-msg-bubble {
-    max-width: 75%;
+    max-width: 72%;
     padding: 12px 16px;
-    font-size: 14px;
-    line-height: 1.6;
+    font-size: 14px; line-height: 1.65;
+    word-break: break-word;
 }
-
-/* User Message bubble */
 .bubble-user {
     background-color: #D97706 !important;
     color: #FFFFFF !important;
-    border-radius: 14px 14px 2px 14px !important;
-    text-align: left;
+    border-radius: 16px 16px 4px 16px !important;
 }
-.bubble-user-text {
-    color: #FFFFFF !important;
-    font-weight: 500 !important;
-}
-
-/* Assistant Bot bubble */
+.bubble-user-text { color: #FFFFFF !important; font-weight: 500 !important; }
 .bubble-bot {
     background-color: #FFFFFF !important;
     color: #44403C !important;
     border: 1px solid #FDE68A !important;
-    border-radius: 14px 14px 14px 2px !important;
-    box-shadow: 0 1px 4px rgba(217,119,6,0.04) !important;
+    border-radius: 16px 16px 16px 4px !important;
+    box-shadow: 0 1px 4px rgba(217,119,6,0.06) !important;
 }
-.bubble-bot-text {
-    color: #44403C !important;
-}
-
+.bubble-bot-text { color: #44403C !important; }
 .custom-meta {
-    font-size: 9.5px;
-    color: #A8A29E;
-    font-family: monospace;
-    margin-top: 5px;
+    font-size: 9px; color: #A8A29E;
+    font-family: monospace; margin-top: 5px;
 }
-.meta-user { text-align: right; color: #EAE6D9 !important; }
+.meta-user { text-align: right; color: rgba(255,255,255,0.6) !important; }
 
-/* ══════════════════════════════════════════════════
-   ✅ NUCLEAR CHAT INPUT FIX — Bottom bar + textarea
-   ══════════════════════════════════════════════════ */
-
-/* 1. Bottom strip ka dark background hatao */
-[data-testid="stBottom"] {
-    background-color: #FFFBF5 !important;
-}
-[data-testid="stBottom"] > div {
-    background-color: #FFFBF5 !important;
-}
-
-/* 2. Chat input outer wrapper */
-[data-testid="stChatInput"] {
-    background-color: #FFFFFF !important;
-    border: 1.5px solid #FDE68A !important;
-    border-radius: 999px !important;
-    padding: 4px 10px !important;
-}
-
-/* 3. Textarea — text visible karo */
-[data-testid="stChatInput"] textarea {
-    color: #B45309 !important;
-    -webkit-text-fill-color: #B45309 !important;
-    background-color: #FFFFFF !important;
-    caret-color: #D97706 !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    font-family: 'Inter', sans-serif !important;
-}
-
-/* 4. Placeholder color */
-[data-testid="stChatInput"] textarea::placeholder {
-    color: #D97706 !important;
-    -webkit-text-fill-color: #D97706 !important;
-    opacity: 0.6 !important;
-}
-
-/* 5. Focus state glow */
-[data-testid="stChatInput"]:focus-within {
-    border-color: #D97706 !important;
-    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15) !important;
-}
-
-/* DYNAMIC ACTIVE ASYNC WAVE DOTS */
-.typing-box { display: flex; align-items: center; gap: 4px; padding: 4px 6px; width: 44px; }
+/* ── TYPING DOTS ── */
+.typing-box { display: flex; align-items: center; gap: 5px; padding: 4px 2px; }
 .typing-dot {
-    width: 5px; height: 5px; border-radius: 50%; background-color: #D97706;
+    width: 6px; height: 6px; border-radius: 50%; background: #D97706;
     animation: waveBounce 0.8s infinite ease-in-out;
 }
 .typing-dot:nth-child(2) { animation-delay: 0.15s; }
-.typing-dot:nth-child(3) { animation-delay: 0.3s; }
+.typing-dot:nth-child(3) { animation-delay: 0.30s; }
 @keyframes waveBounce {
     0%, 100% { transform: translateY(0); opacity: 0.4; }
-    50% { transform: translateY(-4px); opacity: 1; }
+    50% { transform: translateY(-5px); opacity: 1; }
 }
 
+/* ── CHAT INPUT — works on deployed too ── */
+
+/* Remove dark bottom bar background */
+[data-testid="stBottom"],
+[data-testid="stBottom"] > div,
+[data-testid="stBottom"] > div > div {
+    background-color: #FFFBF5 !important;
+    border-top: 1px solid #FDE68A !important;
+}
+
+/* Input container */
+[data-testid="stChatInput"],
+div[data-testid="stChatInput"] {
+    background-color: #FFFFFF !important;
+    border: 1.5px solid #FDE68A !important;
+    border-radius: 999px !important;
+    padding: 4px 12px !important;
+    box-shadow: 0 1px 8px rgba(217,119,6,0.08) !important;
+}
+
+/* Textarea text color */
+[data-testid="stChatInput"] textarea,
+div[data-testid="stChatInput"] textarea {
+    color: #92400E !important;
+    -webkit-text-fill-color: #92400E !important;
+    background-color: transparent !important;
+    caret-color: #D97706 !important;
+    font-size: 14px !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* Placeholder */
+[data-testid="stChatInput"] textarea::placeholder,
+div[data-testid="stChatInput"] textarea::placeholder {
+    color: #D97706 !important;
+    -webkit-text-fill-color: #D97706 !important;
+    opacity: 0.55 !important;
+}
+
+/* Focus glow */
+[data-testid="stChatInput"]:focus-within {
+    border-color: #F97316 !important;
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.12) !important;
+}
+
+/* Send button */
+[data-testid="stChatInput"] button,
+div[data-testid="stChatInput"] button {
+    background: #D97706 !important;
+    border-radius: 50% !important;
+    color: white !important;
+    border: none !important;
+}
+
+/* ── FOOTER ── */
 .veltro-footer {
-    text-align: center; font-size: 10px; color: #D1C4A0; font-family: monospace;
-    padding: 14px; border-top: 1px solid #FDE68A; margin-top: 40px;
+    text-align: center; font-size: 10px; color: #D1C4A0;
+    font-family: monospace; padding: 16px;
+    border-top: 1px solid #FDE68A; margin-top: 32px;
 }
-            
-/* =========================================================
-   MOBILE RESPONSIVE FIX
-========================================================= */
 
+/* ── MOBILE ── */
 @media (max-width: 768px) {
-
-    .block-container {
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-    }
-
-    .welcome-title {
-        font-size: 20px !important;
-    }
-
-    .custom-msg-bubble {
-        max-width: 88% !important;
-    }
-
-    .topbar {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 10px !important;
-    }
-
-    /* Buttons proper mobile layout */
-    .chip-btn button {
-        width: 100% !important;
-        margin-bottom: 10px !important;
-    }
+    .block-container { padding: 1rem 1rem 8rem !important; }
+    .custom-msg-bubble { max-width: 88% !important; font-size: 13px !important; }
+    .welcome-title { font-size: 18px !important; }
+    .topbar { flex-direction: column; align-items: flex-start; gap: 10px; }
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────
-# SIDEBAR BUILD
+# SIDEBAR
 # ─────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("## 🎓 APEX AI")
-    st.markdown('<div style="font-size:9px; letter-spacing:2px; color:#D97706; margin-top:-10px; margin-bottom:16px; font-family:monospace;">POWERED BY VELTRO</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div style="font-size:9px;letter-spacing:2px;color:#D97706;'
+        'margin-top:-10px;margin-bottom:16px;font-family:monospace;">'
+        'POWERED BY VELTRO</div>', unsafe_allow_html=True
+    )
     st.divider()
 
-    st.markdown('<div style="font-size:9px; letter-spacing:2px; margin-bottom:10px; font-family:monospace;">ASK ABOUT</div>', unsafe_allow_html=True)
-    topics = ["📚 Courses & Fees", "⏰ Batch Timings", "📝 Admissions", "👨‍🏫 Faculty & Results", "🏠 Hostel & Facilities"]
-    for topic in topics:
-        st.markdown(f'<div style="padding:4px 6px; font-size:12px; color:#92400E;">• {topic}</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div style="font-size:9px;letter-spacing:2px;margin-bottom:10px;'
+        'font-family:monospace;">ASK ABOUT</div>', unsafe_allow_html=True
+    )
+    for topic in ["📚 Courses & Fees", "⏰ Batch Timings", "📝 Admissions",
+                  "👨‍🏫 Faculty & Results", "🏠 Hostel & Facilities"]:
+        st.markdown(
+            f'<div style="padding:4px 6px;font-size:12px;color:#92400E;">• {topic}</div>',
+            unsafe_allow_html=True
+        )
     st.divider()
 
-    st.markdown('<div style="font-size:9px; letter-spacing:2px; margin-bottom:10px; font-family:monospace;">BOOK FREE DEMO</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div style="font-size:9px;letter-spacing:2px;margin-bottom:10px;'
+        'font-family:monospace;">BOOK FREE DEMO</div>', unsafe_allow_html=True
+    )
     st.text_input("Name", placeholder="Your name", label_visibility="collapsed", key="sb_name")
     st.text_input("Phone", placeholder="+91 phone number", label_visibility="collapsed", key="sb_phone")
-    st.selectbox("Course", ["Select course", "JEE Main / Advanced", "NEET", "Foundation (8-10)"], label_visibility="collapsed", key="sb_course")
+    st.selectbox("Course",
+        ["Select course", "JEE Main / Advanced", "NEET", "Class 11 / 12", "Foundation (8-10)"],
+        label_visibility="collapsed", key="sb_course"
+    )
     st.button("Secure Free Demo Seat →", key="sb_submit")
 
     st.divider()
@@ -388,59 +323,63 @@ with st.sidebar:
         st.session_state.show_welcome = True
         st.rerun()
 
-    st.markdown('<div style="font-size:9px; color:#D1C4A0; font-family:monospace; text-align:center; margin-top:16px;">veltro.build@gmail.com</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div style="font-size:9px;color:#D1C4A0;font-family:monospace;'
+        'text-align:center;margin-top:16px;">veltro.build@gmail.com</div>',
+        unsafe_allow_html=True
+    )
 
 # ─────────────────────────────────────────────────────
-# TOPBAR BRANDING BLOCKS
+# TOPBAR
 # ─────────────────────────────────────────────────────
 st.markdown("""
 <div class="topbar">
-    <div>
-        <div class="topbar-title">Apex Coaching Assistant</div>
-        <div class="topbar-sub">AI-powered · Answers from official knowledge base</div>
-    </div>
-    <div style="display:flex; gap:8px; align-items:center;">
-        <span class="badge badge-speed">⚡ ~0.1s</span>
-        <span class="badge badge-green">
-            <span style="width:6px; height:6px; border-radius:50%; background:#22C55E; display:inline-block;"></span>
-            Online
-        </span>
-    </div>
+  <div>
+    <div class="topbar-title">Apex Coaching Assistant</div>
+    <div class="topbar-sub">AI-powered · Answers from official knowledge base</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span class="badge badge-speed">⚡ ~0.1s</span>
+    <span class="badge badge-green">
+      <span style="width:6px;height:6px;border-radius:50%;background:#22C55E;display:inline-block;"></span>
+      Online
+    </span>
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────
-# PERSISTENT ARRAYS TRACK INITIALIZATION
+# SESSION STATE INIT
 # ─────────────────────────────────────────────────────
-if "messages" not in st.session_state: st.session_state.messages = []
-if "chat_history" not in st.session_state: st.session_state.chat_history = []
-if "show_welcome" not in st.session_state: st.session_state.show_welcome = True
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+if "show_welcome" not in st.session_state:
+    st.session_state.show_welcome = True
 
 if "chain" not in st.session_state:
     with st.spinner("Loading knowledge base..."):
         try:
             vector_store = get_or_create_vector_store("data/coaching_faq.txt")
             st.session_state.chain = get_chain(vector_store)
-
         except Exception:
             st.session_state.chain = None
 
 # ─────────────────────────────────────────────────────
-# WELCOME BOARD ENGINE & ACTION CHIPS
+# WELCOME + CHIPS
 # ─────────────────────────────────────────────────────
 if st.session_state.show_welcome and not st.session_state.messages:
     st.markdown("""
     <div class="welcome-box">
-        <div class="welcome-icon-wrap"><div class="welcome-icon">🎓</div></div>
-        <div class="welcome-title">Hi! I'm Apex's AI Assistant</div>
-        <div class="welcome-sub">Ask me anything about courses, fees, admissions, or timings</div>
+      <div class="welcome-icon-wrap">🎓</div>
+      <div class="welcome-title">Hi! I'm Apex's AI Assistant</div>
+      <div class="welcome-sub">Ask me anything about courses, fees, admissions, or timings</div>
     </div>
     """, unsafe_allow_html=True)
 
     chips = ["📚 Courses offered?", "💰 Fee structure?", "⏰ Batch timings?", "🏆 Results 2025?"]
-    # Responsive columns
-    cols = st.columns([1,1,1,1], gap="medium")
-
+    cols = st.columns(4, gap="small")
     for i, chip in enumerate(chips):
         with cols[i]:
             st.markdown('<div class="chip-btn">', unsafe_allow_html=True)
@@ -452,75 +391,79 @@ if st.session_state.show_welcome and not st.session_state.messages:
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
 
+# ─────────────────────────────────────────────────────
+# CHIP PROCESSING
+# ─────────────────────────────────────────────────────
 if st.session_state.get("active_processing", False):
-    target_query = st.session_state.messages[-1]["content"]
-    current_ts = st.session_state.messages[-1]["time"]
+    target = st.session_state.messages[-1]["content"]
+    ts = st.session_state.messages[-1]["time"]
     try:
-        response = st.session_state.chain.invoke({"input": target_query, "chat_history": st.session_state.chat_history})
+        response = st.session_state.chain.invoke({
+            "input": target,
+            "chat_history": st.session_state.chat_history
+        })
         answer = response["answer"]
-        st.session_state.messages.append({"role": "assistant", "content": answer, "time": current_ts})
-        st.session_state.chat_history.extend([HumanMessage(content=target_query), AIMessage(content=answer)])
-    except Exception as e:
+        st.session_state.messages.append({"role": "assistant", "content": answer, "time": ts})
+        st.session_state.chat_history.extend([HumanMessage(content=target), AIMessage(content=answer)])
+    except Exception:
         st.warning("Knowledge base temporarily unavailable.")
     st.session_state.active_processing = False
     st.rerun()
 
 # ─────────────────────────────────────────────────────
-# DISPATCH RE-PAINT: CHAT HISTORY DISPLAY LOOP
+# CHAT HISTORY DISPLAY
 # ─────────────────────────────────────────────────────
 for message in st.session_state.messages:
     if message["role"] == "user":
         st.markdown(f"""
         <div class="custom-chat-row row-user">
-            <div class="custom-avatar-circle">🧑‍🎓</div>
-            <div class="custom-msg-bubble bubble-user">
-                <div class="bubble-user-text">{message["content"]}</div>
-                <div class="custom-meta meta-user">You · {message.get('time','')}</div>
-            </div>
+          <div class="custom-avatar-circle">🧑‍🎓</div>
+          <div class="custom-msg-bubble bubble-user">
+            <div class="bubble-user-text">{message["content"]}</div>
+            <div class="custom-meta meta-user">You · {message.get("time","")}</div>
+          </div>
         </div>
         """, unsafe_allow_html=True)
     else:
         st.markdown(f"""
         <div class="custom-chat-row row-bot">
-            <div class="custom-avatar-circle">👨‍🏫</div>
-            <div class="custom-msg-bubble bubble-bot">
-                <div class="bubble-bot-text">{message["content"]}</div>
-                <div class="custom-meta">Apex AI · {message.get('time','')}</div>
-            </div>
+          <div class="custom-avatar-circle">👨‍🏫</div>
+          <div class="custom-msg-bubble bubble-bot">
+            <div class="bubble-bot-text">{message["content"]}</div>
+            <div class="custom-meta">Apex AI · {message.get("time","")}</div>
+          </div>
         </div>
         """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────
-# LIVE INPUT TERMINAL CONTROLLER INTERFACE
+# CHAT INPUT
 # ─────────────────────────────────────────────────────
 if prompt := st.chat_input("Ask about Apex Coaching..."):
     st.session_state.show_welcome = False
     msg_time = time.strftime("%I:%M %p")
     st.session_state.messages.append({"role": "user", "content": prompt, "time": msg_time})
 
-    # Render user query instantly
     st.markdown(f"""
     <div class="custom-chat-row row-user">
-        <div class="custom-avatar-circle">🧑‍🎓</div>
-        <div class="custom-msg-bubble bubble-user">
-            <div class="bubble-user-text">{prompt}</div>
-            <div class="custom-meta meta-user">You · {msg_time}</div>
-        </div>
+      <div class="custom-avatar-circle">🧑‍🎓</div>
+      <div class="custom-msg-bubble bubble-user">
+        <div class="bubble-user-text">{prompt}</div>
+        <div class="custom-meta meta-user">You · {msg_time}</div>
+      </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Typing wave indicator
-    typing_placeholder = st.empty()
-    typing_placeholder.markdown(f"""
+    typing_ph = st.empty()
+    typing_ph.markdown("""
     <div class="custom-chat-row row-bot">
-        <div class="custom-avatar-circle">👨‍🏫</div>
-        <div class="custom-msg-bubble bubble-bot">
-            <div class="typing-box">
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-            </div>
+      <div class="custom-avatar-circle">👨‍🏫</div>
+      <div class="custom-msg-bubble bubble-bot">
+        <div class="typing-box">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
         </div>
+      </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -530,15 +473,16 @@ if prompt := st.chat_input("Ask about Apex Coaching..."):
             "chat_history": st.session_state.chat_history
         })
         answer = response["answer"]
-        typing_placeholder.empty()
-
+        typing_ph.empty()
         st.session_state.messages.append({"role": "assistant", "content": answer, "time": msg_time})
         st.session_state.chat_history.extend([HumanMessage(content=prompt), AIMessage(content=answer)])
     except Exception as e:
-        typing_placeholder.empty()
-        st.error(f"Inference Error: {str(e)}")
+        typing_ph.empty()
+        st.error(f"Error: {str(e)}")
 
     st.rerun()
 
-# ── ENDCAP FOOTER LAYOUT ──────────────────────────────
+# ─────────────────────────────────────────────────────
+# FOOTER
+# ─────────────────────────────────────────────────────
 st.markdown('<div class="veltro-footer">Powered by Veltro AI</div>', unsafe_allow_html=True)
