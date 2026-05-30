@@ -30,8 +30,10 @@ html, body, [class*="css"], .stApp {
 }
 
 /* Hiding default Streamlit UI stuff except sidebar controller */
-#MainMenu, footer, header, .stDeployButton,
-[data-testid="stToolbar"], [data-testid="stDecoration"],
+#MainMenu,
+footer,
+.stDeployButton,
+[data-testid="stDecoration"],
 [data-testid="stStatusWidget"] {
     visibility: hidden !important;
     display: none !important;
@@ -162,24 +164,27 @@ div.stButton > button:hover {
 .veltro-footer { text-align: center; font-size: 10px; color: #D1C4A0; font-family: monospace; padding: 16px; border-top: 1px solid #FDE68A; margin-top: 32px; }
 
 /* ── PROBLEM 2 FIXED: CSS FLEX PATTERN FOR TOTAL PHONE SCREEN FULL COVER RESPONSIVENESS ── */
-@media (max-width: 768px) {
-    /* Auto layout shift target for container rows */
-    [data-testid="stHorizontalBlock"] {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 12px !important;
-    }
-    [data-testid="stHorizontalBlock"] > div {
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-    /* Button forces full viewport stretch stretch */
-    div.stButton > button {
-        width: 100% !important;
-        display: block !important;
-        padding: 16px !important;
-    }
-    .custom-msg-bubble { max-width: 85% !important; }
+@media (max-width:768px){
+
+.block-container{
+    padding-left:16px !important;
+    padding-right:16px !important;
+}
+
+div.stButton{
+    width:100% !important;
+}
+
+div.stButton > button{
+    width:100% !important;
+    display:block !important;
+    min-height:60px !important;
+}
+
+.custom-msg-bubble{
+    max-width:95% !important;
+}
+
 }
 </style>
 """, unsafe_allow_html=True)
@@ -250,20 +255,35 @@ if st.session_state.show_welcome and not st.session_state.messages:
     </div>
     """, unsafe_allow_html=True)
 
-    st.write("") 
-    
-    chips = ["📚 Courses offered?", "💰 Fee structure?", "⏰ Batch timings?", "🏆 Results 2025?"]
-    cols = st.columns(4, gap="medium")
-    
-    for i, chip in enumerate(chips):
-        with cols[i]:
-            if st.button(chip, key=f"chip_{i}"):
-                st.session_state.show_welcome = False
-                msg_time = get_ist_time()
-                st.session_state.messages.append({"role": "user", "content": chip, "time": msg_time})
-                st.session_state.active_processing = True
-                st.rerun()
+    st.write("")
 
+    chips = [
+        "📚 Courses offered?",
+        "💰 Fee structure?",
+        "⏰ Batch timings?",
+        "🏆 Results 2025?"
+    ]
+
+    for i, chip in enumerate(chips):
+        if st.button(
+            chip,
+            key=f"chip_{i}",
+            use_container_width=True
+        ):
+            st.session_state.show_welcome = False
+            msg_time = get_ist_time()
+
+            st.session_state.messages.append(
+                {
+                    "role": "user",
+                    "content": chip,
+                    "time": msg_time
+                }
+            )
+
+            st.session_state.active_processing = True
+            st.rerun()
+            
 # ── 7. DATA PIPELINE ──
 if st.session_state.get("active_processing", False):
     target = st.session_state.messages[-1]["content"]
