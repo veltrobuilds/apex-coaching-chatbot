@@ -44,7 +44,7 @@ footer,
     max-width: 860px !important;
     width: 100% !important;
     margin: 0 auto !important;
-    padding: 2rem 1.5rem 10rem 1.5rem !important;
+    padding: 2rem 1rem 10rem 1rem !important;
 }
 
 /* Sidebar design */
