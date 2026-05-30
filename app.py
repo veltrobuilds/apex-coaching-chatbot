@@ -166,8 +166,8 @@ div.stButton > button:hover {
 @media (max-width:768px){
 
 .block-container{
-    padding-left:8px !important;
-    padding-right:8px !important;
+    padding-left:16px !important;
+    padding-right:16px !important;
 }
 
 /* Force Streamlit columns to stack on phones */
