@@ -62,7 +62,8 @@ footer,
     color: white !important;
     border-radius: 0 10px 10px 0 !important;
     position: fixed !important;
-    top: 80px !important;
+    top: 20px !important;
+    left: 0px !important;
     transform: none !important;
     z-index: 999999 !important;
     box-shadow: 2px 2px 10px rgba(217,119,6,0.3) !important;
