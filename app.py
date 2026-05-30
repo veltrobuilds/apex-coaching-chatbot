@@ -62,9 +62,8 @@ footer,
     color: white !important;
     border-radius: 0 10px 10px 0 !important;
     position: fixed !important;
-    top: 50% !important;
-    left: 0 !important;
-    transform: translateY(-50%) !important;
+    top: 80px !important;
+    transform: none !important;
     z-index: 999999 !important;
     box-shadow: 2px 2px 10px rgba(217,119,6,0.3) !important;
     width: 32px !important;
@@ -163,12 +162,21 @@ div.stButton > button:hover {
 
 .veltro-footer { text-align: center; font-size: 10px; color: #D1C4A0; font-family: monospace; padding: 16px; border-top: 1px solid #FDE68A; margin-top: 32px; }
 
-/* ── PROBLEM 2 FIXED: CSS FLEX PATTERN FOR TOTAL PHONE SCREEN FULL COVER RESPONSIVENESS ── */
 @media (max-width:768px){
 
 .block-container{
     padding-left:16px !important;
     padding-right:16px !important;
+}
+
+/* Force Streamlit columns to stack on phones */
+[data-testid="stHorizontalBlock"]{
+    flex-direction:column !important;
+}
+
+[data-testid="column"]{
+    width:100% !important;
+    flex:1 1 100% !important;
 }
 
 div.stButton{
@@ -247,15 +255,16 @@ if "chain" not in st.session_state:
 
 # ── 6. WELCOME LAYOUT & SMART HORIZONTAL CHIPS ──
 if st.session_state.show_welcome and not st.session_state.messages:
+
     st.markdown("""
     <div class="welcome-box">
       <div class="welcome-icon-wrap">🎓</div>
       <div class="welcome-title">Hi! I'm Apex's AI Assistant</div>
-      <div class="welcome-sub">Ask me anything about courses, fees, admissions, or timings</div>
+      <div class="welcome-sub">
+        Ask me anything about courses, fees, admissions, or timings
+      </div>
     </div>
     """, unsafe_allow_html=True)
-
-    st.write("")
 
     chips = [
         "📚 Courses offered?",
@@ -264,25 +273,30 @@ if st.session_state.show_welcome and not st.session_state.messages:
         "🏆 Results 2025?"
     ]
 
+    col1, col2, col3, col4 = st.columns(4)
+
+    columns = [col1, col2, col3, col4]
+
     for i, chip in enumerate(chips):
-        if st.button(
-            chip,
-            key=f"chip_{i}",
-            use_container_width=True
-        ):
-            st.session_state.show_welcome = False
-            msg_time = get_ist_time()
+        with columns[i]:
+            if st.button(
+                chip,
+                key=f"chip_{i}",
+                use_container_width=True
+            ):
+                st.session_state.show_welcome = False
+                msg_time = get_ist_time()
 
-            st.session_state.messages.append(
-                {
-                    "role": "user",
-                    "content": chip,
-                    "time": msg_time
-                }
-            )
+                st.session_state.messages.append(
+                    {
+                        "role": "user",
+                        "content": chip,
+                        "time": msg_time
+                    }
+                )
 
-            st.session_state.active_processing = True
-            st.rerun()
+                st.session_state.active_processing = True
+                st.rerun()
             
 # ── 7. DATA PIPELINE ──
 if st.session_state.get("active_processing", False):
