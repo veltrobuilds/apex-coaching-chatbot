@@ -18,6 +18,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ── CUSTOM CSS & JAVASCRIPT FIXED FOR RESPONSIVENESS AND SIDEBAR TOGGLE ──
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -34,15 +35,16 @@ html, body, [class*="css"], .stApp {
     display: none !important;
 }
 
-/* ── BLOCK CONTAINER ── */
+/* ── BLOCK CONTAINER (PROBLEM 2 FIXED: ALWAYS CENTERED WITH MAX-WIDTH) ── */
 .block-container {
     max-width: 860px !important;
     width: 100% !important;
     margin: 0 auto !important;
-    padding: 1.5rem 2rem 10rem 2rem !important;
+    padding: 1.5rem 1.5rem 10rem 1.5rem !important;
+    transition: margin 0.3s ease-in-out, max-width 0.3s ease-in-out;
 }
 
-/* ── SIDEBAR ── */
+/* ── SIDEBAR STYLING ── */
 [data-testid="stSidebar"] {
     background-color: #FEF3C7 !important;
     border-right: 1px solid #FDE68A !important;
@@ -84,18 +86,18 @@ html, body, [class*="css"], .stApp {
     background: #B45309 !important;
 }
 
-/* ── HIDE DEFAULT COLLAPSED BUTTON ── */
+/* ── STREAMLIT DEFAULT BUTTON HIDE ── */
 [data-testid="collapsedControl"] {
     display: none !important;
 }
 
-/* ── CUSTOM SIDEBAR TOGGLE BUTTON ── */
+/* ── CUSTOM SIDEBAR TOGGLE BUTTON (PROBLEM 1 FIXED) ── */
 #custom-sidebar-btn {
     position: fixed;
-    left: 0;
+    left: 260px; /* Synchronized with sidebar width */
     top: 50%;
     transform: translateY(-50%);
-    width: 28px;
+    width: 30px;
     height: 52px;
     background: #D97706;
     border: none;
@@ -105,8 +107,8 @@ html, body, [class*="css"], .stApp {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 2px 2px 10px rgba(217,119,6,0.35);
-    transition: background 0.2s, left 0.3s;
+    box-shadow: 2px 2px 10px rgba(217,119,6,0.25);
+    transition: left 0.3s ease-in-out, background 0.2s;
 }
 #custom-sidebar-btn:hover { background: #B45309; }
 #custom-sidebar-btn svg {
@@ -114,6 +116,15 @@ html, body, [class*="css"], .stApp {
     width: 14px;
     height: 14px;
     transition: transform 0.3s;
+    transform: rotate(180deg);
+}
+
+/* When sidebar is closed (Appplied via JS) */
+.sidebar-closed #custom-sidebar-btn {
+    left: 0px !important;
+}
+.sidebar-closed #custom-sidebar-btn svg {
+    transform: rotate(0deg) !important;
 }
 
 /* ── TOPBAR ── */
@@ -138,7 +149,7 @@ html, body, [class*="css"], .stApp {
 .badge-speed { background: #FEF3C7; color: #D97706; border: 1px solid #FDE68A; }
 
 /* ── WELCOME ── */
-.welcome-box { text-align: center; padding: 32px 20px 24px; }
+.welcome-box { text-align: center; padding: 32px 20px 16px; }
 .welcome-icon-wrap {
     width: 54px; height: 54px; background: #D97706; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
@@ -147,21 +158,32 @@ html, body, [class*="css"], .stApp {
 .welcome-title { font-size: 22px; font-weight: 700; color: #1C1917; margin-bottom: 6px; }
 .welcome-sub { font-size: 13px; color: #A8A29E; }
 
-/* ── CHIP BUTTONS ── */
+/* ── CHIP BUTTONS (PROBLEM 2 FIXED: ORANGE STYLING) ── */
+.chip-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+    width: 100%;
+}
 .chip-btn button {
-    background: #FFF7ED !important;
-    color: #92400E !important;
-    border: 1px solid #FDE68A !important;
-    border-radius: 999px !important;
-    font-size: 12px !important;
+    background: #D97706 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #B45309 !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
     font-weight: 600 !important;
     width: 100% !important;
-    padding: 8px 12px !important;
-    transition: all 0.2s !important;
+    padding: 12px 14px !important;
+    box-shadow: 0 2px 6px rgba(217,119,6,0.15) !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap;
 }
 .chip-btn button:hover {
-    background: #FED7AA !important;
-    border-color: #F97316 !important;
+    background: #B45309 !important;
+    border-color: #92400E !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(217,119,6,0.25) !important;
 }
 
 /* ── CHAT BUBBLES ── */
@@ -242,17 +264,6 @@ div[data-testid="stChatInput"] textarea::placeholder {
     -webkit-text-fill-color: #D97706 !important;
     opacity: 0.55 !important;
 }
-[data-testid="stChatInput"]:focus-within {
-    border-color: #F97316 !important;
-    box-shadow: 0 0 0 3px rgba(249,115,22,0.12) !important;
-}
-[data-testid="stChatInput"] button,
-div[data-testid="stChatInput"] button {
-    background: #D97706 !important;
-    border-radius: 50% !important;
-    color: white !important;
-    border: none !important;
-}
 
 /* ── FOOTER ── */
 .veltro-footer {
@@ -261,129 +272,90 @@ div[data-testid="stChatInput"] button {
     border-top: 1px solid #FDE68A; margin-top: 32px;
 }
 
+/* ── RESPONSIVE DESIGN (PROBLEM 3 FIXED: MOBILE CHIPS SCREEN COVER) ── */
 @media (max-width: 768px) {
     .block-container { padding: 1rem 1rem 8rem !important; }
+    .chip-container {
+        grid-template-columns: repeat(2, 1fr) !important; /* Mobile pe 2x2 grid banega */
+        gap: 10px !important;
+    }
+    .chip-btn button {
+        font-size: 12px !important;
+        padding: 14px 8px !important;
+        white-space: normal !important; /* Text wraps on small screen */
+    }
     .custom-msg-bubble { max-width: 88% !important; font-size: 13px !important; }
     .welcome-title { font-size: 18px !important; }
     .topbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+    #custom-sidebar-btn { display: none !important; } /* Mobile me automatic overlay handle hota h */
 }
 </style>
 
-<!-- Custom sidebar toggle button -->
-<button id="custom-sidebar-btn" title="Toggle sidebar">
+<button id="custom-sidebar-btn" title="Toggle Sidebar">
   <svg id="btn-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M9 18l6-6-6-6" stroke="white" stroke-width="2.5"
+    <path d="M15 19l-7-7 7-7" stroke="white" stroke-width="2.5"
           stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   </svg>
 </button>
 
 <script>
 (function() {
-  var sidebarOpen = true;
-
-  function getSidebar() {
-    return document.querySelector('[data-testid="stSidebar"]');
-  }
-
-  function getMainContent() {
-    return document.querySelector('.main') ||
-           document.querySelector('[data-testid="stAppViewContainer"] > section:last-child');
-  }
-
-  function getBlockContainer() {
-    return document.querySelector('.block-container');
-  }
-
-  function updateLayout() {
-    var btn = document.getElementById('custom-sidebar-btn');
-    var icon = document.getElementById('btn-icon');
-    var sidebar = getSidebar();
-    var block = getBlockContainer();
-
-    if (!btn) return;
-
-    if (sidebarOpen) {
-      // Sidebar open — button next to sidebar
-      if (sidebar) {
-        var sbWidth = sidebar.offsetWidth || 260;
-        btn.style.left = sbWidth + 'px';
-      }
-      // Rotate arrow to point left
-      if (icon) icon.style.transform = 'rotate(180deg)';
-    } else {
-      // Sidebar closed — button at left edge
-      btn.style.left = '0px';
-      // Arrow points right
-      if (icon) icon.style.transform = 'rotate(0deg)';
-      // Center block container
-      if (block) {
-        block.style.marginLeft = 'auto';
-        block.style.marginRight = 'auto';
-      }
-    }
-  }
-
-  function toggleSidebar() {
-    var sidebar = getSidebar();
-    if (!sidebar) return;
-
-    if (sidebarOpen) {
-      // Close sidebar — find and click Streamlit's own collapse button
-      var collapseBtn = sidebar.querySelector('button[kind="header"]') ||
-                        sidebar.querySelector('[data-testid="stSidebarCollapseButton"]') ||
-                        sidebar.querySelector('button:first-of-type');
-      if (collapseBtn) {
-        collapseBtn.click();
-      } else {
-        // Fallback: hide sidebar directly
-        sidebar.style.display = 'none';
-      }
-      sidebarOpen = false;
-    } else {
-      // Open sidebar
-      if (sidebar.style.display === 'none') {
-        sidebar.style.display = '';
-      }
-      // Try clicking Streamlit's collapsed control
-      var openBtn = document.querySelector('[data-testid="collapsedControl"]');
-      if (openBtn) openBtn.click();
-      sidebarOpen = true;
-    }
-    setTimeout(updateLayout, 200);
-  }
-
-  // Wait for DOM ready then initialize
-  function init() {
-    var btn = document.getElementById('custom-sidebar-btn');
-    if (!btn) { setTimeout(init, 300); return; }
-
-    btn.addEventListener('click', toggleSidebar);
-
-    // Watch for sidebar state changes
-    var observer = new MutationObserver(function() {
-      var sidebar = getSidebar();
-      if (sidebar) {
-        var expanded = sidebar.getAttribute('aria-expanded');
-        if (expanded === 'false') {
-          sidebarOpen = false;
+    function getSidebar() { return document.querySelector('[data-testid="stSidebar"]'); }
+    
+    function updateToggleState() {
+        var sidebar = getSidebar();
+        var body = document.body;
+        var btn = document.getElementById('custom-sidebar-btn');
+        
+        if (!sidebar || !btn) return;
+        
+        // Streamlit ka internal attribute dynamic width target karne k liye
+        var isCollapsed = sidebar.getAttribute('aria-expanded') === 'false' || 
+                          window.getComputedStyle(sidebar).transform !== 'none';
+        
+        if (isCollapsed) {
+            body.classList.add('sidebar-closed');
+            btn.style.left = '0px';
         } else {
-          sidebarOpen = true;
+            body.classList.remove('sidebar-closed');
+            var sbWidth = sidebar.offsetWidth || 260;
+            btn.style.left = sbWidth + 'px';
         }
-        updateLayout();
-      }
-    });
+    }
 
-    var appContainer = document.querySelector('[data-testid="stAppViewContainer"]') || document.body;
-    observer.observe(appContainer, { attributes: true, childList: true, subtree: true });
+    function nativeToggle() {
+        // Streamlit ke default collapse/expand button pr click automation trigger karna
+        var collapseBtn = document.querySelector('[data-testid="stSidebarCollapseButton"]') || 
+                          document.querySelector('button[kind="header"]') ||
+                          document.querySelector('[data-testid="collapsedControl"] button');
+                          
+        if (collapseBtn) {
+            collapseBtn.click();
+        }
+        setTimeout(updateToggleState, 150);
+    }
 
-    updateLayout();
-  }
+    function init() {
+        var btn = document.getElementById('custom-sidebar-btn');
+        if (!btn) { setTimeout(init, 200); return; }
+        
+        btn.removeEventListener('click', nativeToggle);
+        btn.addEventListener('click', nativeToggle);
+        
+        // Sidebar element dynamically changes monitor karne k liye MutationObserver
+        var observer = new MutationObserver(updateToggleState);
+        var appContainer = document.querySelector('[data-testid="stAppViewContainer"]') || document.body;
+        observer.observe(appContainer, { attributes: true, subtree: true, attributeFilter: ['aria-expanded', 'style'] });
+        
+        window.addEventListener('resize', updateToggleState);
+        updateToggleState();
+    }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    setTimeout(init, 500);
-  }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        setTimeout(init, 400);
+    }
 })();
 </script>
 """, unsafe_allow_html=True)
@@ -464,7 +436,7 @@ if "chain" not in st.session_state:
         except Exception:
             st.session_state.chain = None
 
-# ── WELCOME + CHIPS ───────────────────────────────────
+# ── WELCOME + CHIPS (PROBLEMS 2 & 3 SOLUTIONS APPLIED HERE) ──
 if st.session_state.show_welcome and not st.session_state.messages:
     st.markdown("""
     <div class="welcome-box">
@@ -475,6 +447,9 @@ if st.session_state.show_welcome and not st.session_state.messages:
     """, unsafe_allow_html=True)
 
     chips = ["📚 Courses offered?", "💰 Fee structure?", "⏰ Batch timings?", "🏆 Results 2025?"]
+    
+    # Grid HTML wrap open for CSS processing
+    st.markdown('<div class="chip-container">', unsafe_allow_html=True)
     cols = st.columns(4, gap="small")
     for i, chip in enumerate(chips):
         with cols[i]:
@@ -486,21 +461,23 @@ if st.session_state.show_welcome and not st.session_state.messages:
                 st.session_state.active_processing = True
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True) # Grid close
 
 # ── CHIP PROCESSING ───────────────────────────────────
 if st.session_state.get("active_processing", False):
     target = st.session_state.messages[-1]["content"]
     ts = st.session_state.messages[-1]["time"]
-    try:
-        response = st.session_state.chain.invoke({
-            "input": target,
-            "chat_history": st.session_state.chat_history
-        })
-        answer = response["answer"]
-        st.session_state.messages.append({"role": "assistant", "content": answer, "time": ts})
-        st.session_state.chat_history.extend([HumanMessage(content=target), AIMessage(content=answer)])
-    except Exception:
-        st.warning("Knowledge base temporarily unavailable.")
+    if st.session_state.chain is not None:
+        try:
+            response = st.session_state.chain.invoke({
+                "input": target,
+                "chat_history": st.session_state.chat_history
+            })
+            answer = response["answer"]
+            st.session_state.messages.append({"role": "assistant", "content": answer, "time": ts})
+            st.session_state.chat_history.extend([HumanMessage(content=target), AIMessage(content=answer)])
+        except Exception:
+            st.warning("Knowledge base temporarily unavailable.")
     st.session_state.active_processing = False
     st.rerun()
 
@@ -557,18 +534,22 @@ if prompt := st.chat_input("Ask about Apex Coaching..."):
     </div>
     """, unsafe_allow_html=True)
 
-    try:
-        response = st.session_state.chain.invoke({
-            "input": prompt,
-            "chat_history": st.session_state.chat_history
-        })
-        answer = response["answer"]
+    if st.session_state.chain is not None:
+        try:
+            response = st.session_state.chain.invoke({
+                "input": prompt,
+                "chat_history": st.session_state.chat_history
+            })
+            answer = response["answer"]
+            typing_ph.empty()
+            st.session_state.messages.append({"role": "assistant", "content": answer, "time": msg_time})
+            st.session_state.chat_history.extend([HumanMessage(content=prompt), AIMessage(content=answer)])
+        except Exception as e:
+            typing_ph.empty()
+            st.error(f"Error: {str(e)}")
+    else:
         typing_ph.empty()
-        st.session_state.messages.append({"role": "assistant", "content": answer, "time": msg_time})
-        st.session_state.chat_history.extend([HumanMessage(content=prompt), AIMessage(content=answer)])
-    except Exception as e:
-        typing_ph.empty()
-        st.error(f"Error: {str(e)}")
+        st.error("Knowledge base load nahi ho paya.")
 
     st.rerun()
 
