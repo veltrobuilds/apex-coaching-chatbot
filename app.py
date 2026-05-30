@@ -3,13 +3,14 @@ from dotenv import load_dotenv
 from src.embedder import get_or_create_vector_store
 from src.chain import get_chain
 from langchain_core.messages import HumanMessage, AIMessage
-import time
+from datetime import datetime
+import pytz
 
 load_dotenv()
 
-# ─────────────────────────────────────────────────────
-# PAGE CONFIG
-# ─────────────────────────────────────────────────────
+def get_ist_time():
+    return datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%I:%M %p")
+
 st.set_page_config(
     page_title="Apex Coaching Assistant",
     page_icon="🎓",
@@ -17,20 +18,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ─────────────────────────────────────────────────────
-# CSS — Same on local + deployed
-# ─────────────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* ── BASE ── */
 html, body, [class*="css"], .stApp {
     font-family: 'Inter', sans-serif !important;
     background-color: #FFFBF5 !important;
 }
 
-/* ── HIDE STREAMLIT CHROME ── */
 #MainMenu, footer, header, .stDeployButton,
 [data-testid="stToolbar"], [data-testid="stDecoration"],
 [data-testid="stStatusWidget"] {
@@ -38,12 +34,24 @@ html, body, [class*="css"], .stApp {
     display: none !important;
 }
 
-/* ── BLOCK CONTAINER ── */
 .block-container {
     max-width: 860px !important;
     width: 100% !important;
     margin: 0 auto !important;
     padding: 1.5rem 2rem 10rem 2rem !important;
+}
+
+/* CENTER FIX — sidebar open ya band dono me center */
+section[data-testid="stSidebar"] ~ div[class*="main"],
+section[data-testid="stSidebar"][aria-expanded="false"] ~ div[class*="main"] {
+    display: flex !important;
+    justify-content: center !important;
+}
+
+/* Sidebar open hone pe bhi block-container centered rahe */
+.main .block-container {
+    margin-left: auto !important;
+    margin-right: auto !important;
 }
 
 /* ── SIDEBAR ── */
@@ -66,8 +74,6 @@ html, body, [class*="css"], .stApp {
     color: #D97706 !important;
     opacity: 0.5 !important;
 }
-
-/* Sidebar selectbox */
 [data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] {
     background: #D97706 !important;
     border-radius: 10px !important;
@@ -79,8 +85,6 @@ html, body, [class*="css"], .stApp {
     color: white !important;
 }
 [data-testid="stSidebar"] svg { fill: white !important; }
-
-/* Sidebar buttons */
 [data-testid="stSidebar"] div.stButton > button {
     background: #D97706 !important;
     color: white !important;
@@ -93,18 +97,25 @@ html, body, [class*="css"], .stApp {
     background: #B45309 !important;
 }
 
-/* Sidebar collapse button */
+/* ── SIDEBAR REOPEN BUTTON — ALWAYS VISIBLE ── */
 [data-testid="collapsedControl"] {
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
     background: #D97706 !important;
-    color: white !important;
-    border-radius: 10px !important;
+    border-radius: 0 10px 10px 0 !important;
     border: none !important;
     z-index: 999999 !important;
+    min-width: 28px !important;
+    min-height: 48px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    box-shadow: 2px 2px 8px rgba(217,119,6,0.25) !important;
 }
 [data-testid="collapsedControl"]:hover { background: #B45309 !important; }
+[data-testid="collapsedControl"] svg { fill: white !important; color: white !important; }
+[data-testid="collapsedControl"] * { color: white !important; }
 
 /* ── TOPBAR ── */
 .topbar {
@@ -132,7 +143,7 @@ html, body, [class*="css"], .stApp {
 .welcome-icon-wrap {
     width: 54px; height: 54px; background: #D97706; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 12px;
+    font-size: 24px; margin: 0 auto 12px;
 }
 .welcome-title { font-size: 22px; font-weight: 700; color: #1C1917; margin-bottom: 6px; }
 .welcome-sub { font-size: 13px; color: #A8A29E; }
@@ -169,12 +180,9 @@ html, body, [class*="css"], .stApp {
     display: flex; align-items: center; justify-content: center;
     font-size: 16px; flex-shrink: 0;
 }
-
 .custom-msg-bubble {
-    max-width: 72%;
-    padding: 12px 16px;
-    font-size: 14px; line-height: 1.65;
-    word-break: break-word;
+    max-width: 72%; padding: 12px 16px;
+    font-size: 14px; line-height: 1.65; word-break: break-word;
 }
 .bubble-user {
     background-color: #D97706 !important;
@@ -190,10 +198,7 @@ html, body, [class*="css"], .stApp {
     box-shadow: 0 1px 4px rgba(217,119,6,0.06) !important;
 }
 .bubble-bot-text { color: #44403C !important; }
-.custom-meta {
-    font-size: 9px; color: #A8A29E;
-    font-family: monospace; margin-top: 5px;
-}
+.custom-meta { font-size: 9px; color: #A8A29E; font-family: monospace; margin-top: 5px; }
 .meta-user { text-align: right; color: rgba(255,255,255,0.6) !important; }
 
 /* ── TYPING DOTS ── */
@@ -209,17 +214,13 @@ html, body, [class*="css"], .stApp {
     50% { transform: translateY(-5px); opacity: 1; }
 }
 
-/* ── CHAT INPUT — works on deployed too ── */
-
-/* Remove dark bottom bar background */
+/* ── CHAT INPUT ── */
 [data-testid="stBottom"],
 [data-testid="stBottom"] > div,
 [data-testid="stBottom"] > div > div {
     background-color: #FFFBF5 !important;
     border-top: 1px solid #FDE68A !important;
 }
-
-/* Input container */
 [data-testid="stChatInput"],
 div[data-testid="stChatInput"] {
     background-color: #FFFFFF !important;
@@ -228,8 +229,6 @@ div[data-testid="stChatInput"] {
     padding: 4px 12px !important;
     box-shadow: 0 1px 8px rgba(217,119,6,0.08) !important;
 }
-
-/* Textarea text color */
 [data-testid="stChatInput"] textarea,
 div[data-testid="stChatInput"] textarea {
     color: #92400E !important;
@@ -239,22 +238,16 @@ div[data-testid="stChatInput"] textarea {
     font-size: 14px !important;
     font-family: 'Inter', sans-serif !important;
 }
-
-/* Placeholder */
 [data-testid="stChatInput"] textarea::placeholder,
 div[data-testid="stChatInput"] textarea::placeholder {
     color: #D97706 !important;
     -webkit-text-fill-color: #D97706 !important;
     opacity: 0.55 !important;
 }
-
-/* Focus glow */
 [data-testid="stChatInput"]:focus-within {
     border-color: #F97316 !important;
     box-shadow: 0 0 0 3px rgba(249,115,22,0.12) !important;
 }
-
-/* Send button */
 [data-testid="stChatInput"] button,
 div[data-testid="stChatInput"] button {
     background: #D97706 !important;
@@ -280,9 +273,7 @@ div[data-testid="stChatInput"] button {
 </style>
 """, unsafe_allow_html=True)
 
-# ─────────────────────────────────────────────────────
-# SIDEBAR
-# ─────────────────────────────────────────────────────
+# ── SIDEBAR ──────────────────────────────────────────
 with st.sidebar:
     st.markdown("## 🎓 APEX AI")
     st.markdown(
@@ -291,7 +282,6 @@ with st.sidebar:
         'POWERED BY VELTRO</div>', unsafe_allow_html=True
     )
     st.divider()
-
     st.markdown(
         '<div style="font-size:9px;letter-spacing:2px;margin-bottom:10px;'
         'font-family:monospace;">ASK ABOUT</div>', unsafe_allow_html=True
@@ -303,7 +293,6 @@ with st.sidebar:
             unsafe_allow_html=True
         )
     st.divider()
-
     st.markdown(
         '<div style="font-size:9px;letter-spacing:2px;margin-bottom:10px;'
         'font-family:monospace;">BOOK FREE DEMO</div>', unsafe_allow_html=True
@@ -315,23 +304,19 @@ with st.sidebar:
         label_visibility="collapsed", key="sb_course"
     )
     st.button("Secure Free Demo Seat →", key="sb_submit")
-
     st.divider()
     if st.button("🗑 Reset Conversation", key="sb_reset"):
         st.session_state.messages = []
         st.session_state.chat_history = []
         st.session_state.show_welcome = True
         st.rerun()
-
     st.markdown(
         '<div style="font-size:9px;color:#D1C4A0;font-family:monospace;'
         'text-align:center;margin-top:16px;">veltro.build@gmail.com</div>',
         unsafe_allow_html=True
     )
 
-# ─────────────────────────────────────────────────────
-# TOPBAR
-# ─────────────────────────────────────────────────────
+# ── TOPBAR ───────────────────────────────────────────
 st.markdown("""
 <div class="topbar">
   <div>
@@ -348,9 +333,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ─────────────────────────────────────────────────────
-# SESSION STATE INIT
-# ─────────────────────────────────────────────────────
+# ── SESSION STATE ─────────────────────────────────────
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "chat_history" not in st.session_state:
@@ -366,9 +349,7 @@ if "chain" not in st.session_state:
         except Exception:
             st.session_state.chain = None
 
-# ─────────────────────────────────────────────────────
-# WELCOME + CHIPS
-# ─────────────────────────────────────────────────────
+# ── WELCOME + CHIPS ───────────────────────────────────
 if st.session_state.show_welcome and not st.session_state.messages:
     st.markdown("""
     <div class="welcome-box">
@@ -385,15 +366,13 @@ if st.session_state.show_welcome and not st.session_state.messages:
             st.markdown('<div class="chip-btn">', unsafe_allow_html=True)
             if st.button(chip, key=f"chip_{i}"):
                 st.session_state.show_welcome = False
-                msg_time = time.strftime("%I:%M %p")
+                msg_time = get_ist_time()
                 st.session_state.messages.append({"role": "user", "content": chip, "time": msg_time})
                 st.session_state.active_processing = True
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
 
-# ─────────────────────────────────────────────────────
-# CHIP PROCESSING
-# ─────────────────────────────────────────────────────
+# ── CHIP PROCESSING ───────────────────────────────────
 if st.session_state.get("active_processing", False):
     target = st.session_state.messages[-1]["content"]
     ts = st.session_state.messages[-1]["time"]
@@ -410,9 +389,7 @@ if st.session_state.get("active_processing", False):
     st.session_state.active_processing = False
     st.rerun()
 
-# ─────────────────────────────────────────────────────
-# CHAT HISTORY DISPLAY
-# ─────────────────────────────────────────────────────
+# ── CHAT HISTORY ──────────────────────────────────────
 for message in st.session_state.messages:
     if message["role"] == "user":
         st.markdown(f"""
@@ -435,12 +412,10 @@ for message in st.session_state.messages:
         </div>
         """, unsafe_allow_html=True)
 
-# ─────────────────────────────────────────────────────
-# CHAT INPUT
-# ─────────────────────────────────────────────────────
+# ── CHAT INPUT ────────────────────────────────────────
 if prompt := st.chat_input("Ask about Apex Coaching..."):
     st.session_state.show_welcome = False
-    msg_time = time.strftime("%I:%M %p")
+    msg_time = get_ist_time()
     st.session_state.messages.append({"role": "user", "content": prompt, "time": msg_time})
 
     st.markdown(f"""
@@ -482,7 +457,5 @@ if prompt := st.chat_input("Ask about Apex Coaching..."):
 
     st.rerun()
 
-# ─────────────────────────────────────────────────────
-# FOOTER
-# ─────────────────────────────────────────────────────
+# ── FOOTER ────────────────────────────────────────────
 st.markdown('<div class="veltro-footer">Powered by Veltro AI</div>', unsafe_allow_html=True)
