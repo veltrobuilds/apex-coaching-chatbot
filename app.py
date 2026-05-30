@@ -11,7 +11,7 @@ load_dotenv()
 def get_ist_time():
     return datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%I:%M %p")
 
-# ── 1. CONFIG (Yahan wide layout default rahega) ──
+# ── 1. PAGE CONFIG ──
 st.set_page_config(
     page_title="Apex Coaching Assistant",
     page_icon="🎓",
@@ -19,17 +19,17 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ── 2. CLEAN CSS OVERRIDES (Bina risky JavaScript ke) ──
+# ── 2. ULTIMATE CSS OVERRIDES FOR SIDEBAR & RESPONSIVE CHIPS ──
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 html, body, [class*="css"], .stApp {
     font-family: 'Inter', sans-serif !important;
     background-color: #FFFBF5 !important;
 }
 
-/* Default Header/Footer Hide */
+/* Hiding default Streamlit UI stuff except sidebar controller */
 #MainMenu, footer, header, .stDeployButton,
 [data-testid="stToolbar"], [data-testid="stDecoration"],
 [data-testid="stStatusWidget"] {
@@ -37,7 +37,7 @@ html, body, [class*="css"], .stApp {
     display: none !important;
 }
 
-/* PROBLEM FIXED: Content sidebar hatne par auto-center hoga aur 100% scale karega */
+/* Centralized main container */
 .block-container {
     max-width: 860px !important;
     width: 100% !important;
@@ -45,30 +45,43 @@ html, body, [class*="css"], .stApp {
     padding: 2rem 1.5rem 10rem 1.5rem !important;
 }
 
-/* Sidebar Custom Styling */
+/* Sidebar design */
 [data-testid="stSidebar"] {
     background-color: #FEF3C7 !important;
     border-right: 1px solid #FDE68A !important;
 }
 [data-testid="stSidebar"] * { color: #92400E !important; }
 
-/* Streamlit ke default toggle button ko custom orange look dena (PROBLEM 1 FIXED) */
+/* ── PROBLEM 1 FIXED: ENFORCING SIDEBAR TOGGLE BUTTON VISIBILITY ── */
 [data-testid="stSidebarCollapseButton"] {
+    visibility: visible !important;
+    display: flex !important;
     background-color: #D97706 !important;
     color: white !important;
-    border-radius: 8px !important;
+    border-radius: 0 10px 10px 0 !important;
     position: fixed !important;
-    top: 15px !important;
-    left: 15px !important;
+    top: 50% !important;
+    left: 0 !important;
+    transform: translateY(-50%) !important;
     z-index: 999999 !important;
-    box-shadow: 0 2px 8px rgba(217,119,6,0.3) !important;
+    box-shadow: 2px 2px 10px rgba(217,119,6,0.3) !important;
+    width: 32px !important;
+    height: 52px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease-in-out !important;
+}
+[data-testid="stSidebarCollapseButton"]:hover {
+    background-color: #B45309 !important;
 }
 [data-testid="stSidebarCollapseButton"] svg {
     fill: white !important;
     stroke: white !important;
+    width: 18px !important;
+    height: 18px !important;
 }
 
-/* Topbar Design */
+/* Topbar header */
 .topbar {
     background: white;
     border: 1px solid #FDE68A;
@@ -89,7 +102,7 @@ html, body, [class*="css"], .stApp {
 .badge-green { background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
 .badge-speed { background: #FEF3C7; color: #D97706; border: 1px solid #FDE68A; }
 
-/* Welcome Box */
+/* Welcome Text Block */
 .welcome-box { text-align: center; padding: 20px 20px 10px; }
 .welcome-icon-wrap {
     width: 54px; height: 54px; background: #D97706; border-radius: 50%;
@@ -99,26 +112,25 @@ html, body, [class*="css"], .stApp {
 .welcome-title { font-size: 22px; font-weight: 700; color: #1C1917; margin-bottom: 6px; }
 .welcome-sub { font-size: 13px; color: #A8A29E; }
 
-/* PROBLEM 2 FIXED: Orange theme styling jo pure elements par enforce hogi */
+/* Pure Orange Global Button Override */
 div.stButton > button {
     background-color: #D97706 !important;
     color: white !important;
     border: 1px solid #B45309 !important;
     border-radius: 12px !important;
-    padding: 12px 16px !important;
+    padding: 14px 16px !important;
     font-size: 14px !important;
     font-weight: 600 !important;
     width: 100% !important;
-    transition: all 0.2s ease-in-out !important;
-    box-shadow: 0 2px 5px rgba(217,119,6,0.15) !important;
+    transition: all 0.15s ease-in-out !important;
+    box-shadow: 0 2px 6px rgba(217,119,6,0.15) !important;
 }
 div.stButton > button:hover {
     background-color: #B45309 !important;
     border-color: #92400E !important;
-    transform: translateY(-1px) !important;
 }
 
-/* Chat Input Styling */
+/* Chat Field styling */
 [data-testid="stBottom"], [data-testid="stBottom"] > div {
     background-color: #FFFBF5 !important;
 }
@@ -127,7 +139,7 @@ div.stButton > button:hover {
     border-radius: 30px !important;
 }
 
-/* Chat Bubbles */
+/* Chat Layout structure */
 .custom-chat-row { display: flex; width: 100%; margin-bottom: 16px; gap: 10px; }
 .row-user { flex-direction: row-reverse; }
 .row-bot { flex-direction: row; }
@@ -140,7 +152,7 @@ div.stButton > button:hover {
 .bubble-bot { background-color: white; color: #44403C; border: 1px solid #FDE68A; border-radius: 16px 16px 16px 4px; }
 .custom-meta { font-size: 9px; color: #A8A29E; font-family: monospace; margin-top: 5px; }
 
-/* Typing Box */
+/* Typing Effect */
 .typing-box { display: flex; align-items: center; gap: 5px; padding: 4px 2px; }
 .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: #D97706; animation: wave 0.8s infinite ease-in-out; }
 .typing-dot:nth-child(2) { animation-delay: 0.15s; }
@@ -149,16 +161,30 @@ div.stButton > button:hover {
 
 .veltro-footer { text-align: center; font-size: 10px; color: #D1C4A0; font-family: monospace; padding: 16px; border-top: 1px solid #FDE68A; margin-top: 32px; }
 
-/* PROBLEM 3 FIXED: Mobile configuration targets standard columns stretch */
+/* ── PROBLEM 2 FIXED: CSS FLEX PATTERN FOR TOTAL PHONE SCREEN FULL COVER RESPONSIVENESS ── */
 @media (max-width: 768px) {
-    [data-testid="stSidebarCollapseButton"] { left: 10px !important; top: 10px !important; }
+    /* Auto layout shift target for container rows */
+    [data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+    [data-testid="stHorizontalBlock"] > div {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    /* Button forces full viewport stretch stretch */
+    div.stButton > button {
+        width: 100% !important;
+        display: block !important;
+        padding: 16px !important;
+    }
     .custom-msg-bubble { max-width: 85% !important; }
-    /* Mobile standard stacking logic handles full screen wrap automatically */
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ── 3. SIDEBAR PANEL ──
+# ── 3. SIDEBAR ELEMENT ──
 with st.sidebar:
     st.markdown("## 🎓 APEX AI")
     st.markdown('<div style="font-size:9px;letter-spacing:2px;color:#D97706;margin-top:-10px;margin-bottom:16px;font-family:monospace;">POWERED BY VELTRO</div>', unsafe_allow_html=True)
@@ -182,7 +208,7 @@ with st.sidebar:
         st.session_state.show_welcome = True
         st.rerun()
 
-# ── 4. MAIN CONTENT TOPBAR ──
+# ── 4. APP TOPBAR ──
 st.markdown("""
 <div class="topbar">
   <div>
@@ -199,7 +225,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ── 5. INITIALIZE SESSION STATES ──
+# ── 5. PERSISTENT STATES ──
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "chat_history" not in st.session_state:
@@ -214,7 +240,7 @@ if "chain" not in st.session_state:
     except Exception:
         st.session_state.chain = None
 
-# ── 6. WELCOME SCREEN + CHIPS (ORANGE & RESPONSIVE FIX) ──
+# ── 6. WELCOME LAYOUT & SMART HORIZONTAL CHIPS ──
 if st.session_state.show_welcome and not st.session_state.messages:
     st.markdown("""
     <div class="welcome-box">
@@ -224,15 +250,13 @@ if st.session_state.show_welcome and not st.session_state.messages:
     </div>
     """, unsafe_allow_html=True)
 
-    st.write("") # Extra padding
+    st.write("") 
     
-    # PROBLEM 2 & 3 FIXED: Streamlit native columns block blocks background ko full width dynamically orange render karega
     chips = ["📚 Courses offered?", "💰 Fee structure?", "⏰ Batch timings?", "🏆 Results 2025?"]
     cols = st.columns(4, gap="medium")
     
     for i, chip in enumerate(chips):
         with cols[i]:
-            # Native button automatic phone par vertical stack hokar poori width cover karega, aur desktop pe orange grid banega
             if st.button(chip, key=f"chip_{i}"):
                 st.session_state.show_welcome = False
                 msg_time = get_ist_time()
@@ -240,7 +264,7 @@ if st.session_state.show_welcome and not st.session_state.messages:
                 st.session_state.active_processing = True
                 st.rerun()
 
-# ── 7. CHIP PROCESSING ──
+# ── 7. DATA PIPELINE ──
 if st.session_state.get("active_processing", False):
     target = st.session_state.messages[-1]["content"]
     ts = st.session_state.messages[-1]["time"]
@@ -255,7 +279,7 @@ if st.session_state.get("active_processing", False):
     st.session_state.active_processing = False
     st.rerun()
 
-# ── 8. CHAT HISTORY RENDERING ──
+# ── 8. RENDER CHAT ──
 for message in st.session_state.messages:
     if message["role"] == "user":
         st.markdown(f"""
@@ -278,7 +302,7 @@ for message in st.session_state.messages:
         </div>
         """, unsafe_allow_html=True)
 
-# ── 9. CHAT INPUT BLOCK ──
+# ── 9. SYSTEM BOTTOM INPUT ──
 if prompt := st.chat_input("Ask about Apex Coaching..."):
     st.session_state.show_welcome = False
     msg_time = get_ist_time()
